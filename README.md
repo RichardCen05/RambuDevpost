@@ -77,6 +77,16 @@ uv run --project backend python tools/mac_puck.py --server https://something.try
 
 Later runs reuse the pairing: `uv run --project backend python tools/mac_puck.py`. It starts recording on its own when someone speaks and ends the call after six seconds of quiet (or when you press Enter).
 
+### Recording a demo on simulators
+
+Without two iPhones, run the parent and caregiver apps in two iOS Simulators on the same Mac (the simulators reach the backend at `http://127.0.0.1:8001`, no tunnel needed) and record both screens:
+
+```bash
+tools/record_demo.sh ~/Movies/rambu-take1
+```
+
+Turn off **Read alerts aloud** on the simulators (or mute them) while the stand-in puck is listening, so the Mac's speakers don't feed the app's voice back into the microphone.
+
 ### Tests
 
 ```bash

@@ -59,20 +59,20 @@ Build mode: fast
   Learner check: Switch the language in Profile, open History, and try the practice call on a fresh install.
   Commit: `Add history, profile, practice, and protection states`
 
-- [ ] **6. Both iPhones run the app and the demo scene works for real**
-  Becomes usable: The app, installed from Xcode on Richard's and Zahra's iPhones, runs the full 60-second demo with the Mac stand-in puck; the README documents setup, the puck's 3D design, parts, wiring, firmware, and pairing.
+- [x] **6. The demo scene runs for real on two simulators with the stand-in puck**
+  Becomes usable: On this Mac, the parent and caregiver apps run in two iOS Simulators against the local backend; a call on loudspeaker next to the Mac is heard by the stand-in puck, both screens get the warning, the caregiver taps Scam, and the parent's screen turns red. `tools/record_demo.sh` records both screens for the video. The README documents setup, the puck's 3D design, parts, wiring, firmware, and pairing.
   Why now: Last, because it packages everything; the rehearsal is the finish line from `scope.md > What "Working" Looks Like`.
   PRD ref: `prd.md > What We're Building`, `prd.md > The Core Journey`
-  Spec ref: `spec.md > Where It Runs and How Someone Tries It`, `spec.md > External Services and Dependencies`
-  Build: install on both iPhones from Xcode (sandbox APNs), README + `hardware/` design files, final pass on copy.
-  Verify (mechanical): both iPhones run the device build and receive pushes; rehearsal measures the OTP-to-warning time and both screens behave as in the demo script.
-  Learner check: Do one full take of the demo script with Zahra.
-  Commit: `Prepare device builds and README`
+  Spec ref: `spec.md > Where It Runs and How Someone Tries It`
+  Build: `tools/record_demo.sh`, README, rehearsal with the demo audio.
+  Verify (mechanical): a rehearsal run produces two screen recordings in which the warning and the red verdict appear while the call audio is still playing; the measured OTP-to-warning time is noted.
+  Learner check: Watch the two recordings side by side, or run one take yourself with a phone on speaker next to the Mac.
+  Commit: `Add demo recording script and README`
 
 ## Hands-on Checkpoints
 
 - [ ] Early usable behavior explored — after slice 4: the full warning → Scam → red loop on simulators (agent-verified on two simulators; learner hasn't tried it yet)
-- [ ] Final kick-the-tires exploration and feedback completed — the slice 6 rehearsal on real devices
+- [ ] Final kick-the-tires exploration and feedback completed — the slice 6 rehearsal on two simulators
 
 ## Final Review
 
@@ -104,3 +104,5 @@ Activity mode:
 - iOS for slices 4 and 5 was built by two parallel agents on separate branches and merged (learner asked for parallel work to go faster).
 - APNs rejected pushes with TopicDisallowed until a device build registered the `id.rambu.app` App ID with push; after that Apple accepts alert and Live Activity start pushes. Live Activity *updates* were skipped on the simulator because no activity push token reached the backend; to check on real iPhones in slice 6. In-app polling shows warnings and verdicts either way.
 - Headlines and history titles use the strongest signal (secret code > transfer > app > institution > pressure) instead of the last one heard — the demo's OTP request was showing as "pressuring you".
+- The demo runs on two iOS Simulators instead of two iPhones — two iPhones aren't available tonight (learner). The simulators run the same app against the same backend and receive real pushes; on screen they're labelled as simulators. No tunnel is needed since everything runs on this Mac.
+- Rehearsal (26 Oct, 21:15): first warning 14 s into the call, Danger about 10 s after the OTP sentence, real APNs alerts on both simulators, verdict turned the parent's screen red. The simulators' read-aloud voice came out of the Mac speakers and the stand-in heard it as a new call; the README now says to mute read-aloud while recording on one Mac.
