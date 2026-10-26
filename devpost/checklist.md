@@ -39,7 +39,7 @@ Build mode: fast
   Learner check: Look at the screenshots (or run the simulators): welcome through both Homes. Does it look and read the way you want?
   Commit: `Add onboarding and family linking`
 
-- [ ] **4. A warning reaches both phones mid-call and the caregiver's Scam turns the parent red**
+- [x] **4. A warning reaches both phones mid-call and the caregiver's Scam turns the parent red**
   Becomes usable: Running the scam sample through the fake puck makes the parent simulator get the urgent warning and a Live Activity, the caregiver simulator get "Ratna may be getting scammed" with the evidence, and tapping Scam turns the parent's screen and Live Activity red.
   Why now: This is the kernel's "oh, that's cool" beat; it comes right after the devices can be linked.
   PRD ref: `prd.md > Warnings`, `prd.md > Caregiver decision`, `prd.md > The Core Journey` (steps 5–10)
@@ -71,7 +71,7 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 4: the full warning → Scam → red loop on simulators
+- [ ] Early usable behavior explored — after slice 4: the full warning → Scam → red loop on simulators (agent-verified on two simulators; learner hasn't tried it yet)
 - [ ] Final kick-the-tires exploration and feedback completed — the slice 6 rehearsal on real devices
 
 ## Final Review
@@ -101,3 +101,5 @@ Activity mode:
 - Slice 3 was committed before slice 2 — the app was verified while the stand-in puck was being redefined; nothing in slice 3 depends on slice 2.
 - The stand-in pairs with the family through the parent's invite code (`POST /api/pucks/claim`) — the dev puck token belongs to no family, so its calls would never reach Ratna's phones. The backend for slice 4 (alerts, decisions, history, APNs, Live Activity pushes) landed in slice 2's commit because the claim route lives with it.
 - The stand-in picks the built-in microphone by name — on this Mac input `:0` is a silent Zoom virtual device.
+- iOS for slices 4 and 5 was built by two parallel agents on separate branches and merged (learner asked for parallel work to go faster).
+- APNs rejected pushes with TopicDisallowed until a device build registered the `id.rambu.app` App ID with push; after that Apple accepts alert and Live Activity start pushes. Live Activity *updates* were skipped on the simulator because no activity push token reached the backend; to check on real iPhones in slice 6. In-app polling shows warnings and verdicts either way.

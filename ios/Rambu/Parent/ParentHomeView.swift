@@ -18,7 +18,7 @@ struct ParentHomeView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HomeHeader(name: model.settings.name)
 
-                // ParentCallSection() goes here (Parent/ParentCallView.swift, other branch)
+                ParentCallSection()
                 ParentIssueBanners()
 
                 let family = model.family
@@ -104,6 +104,10 @@ struct ParentHomeView: View {
             await model.refreshHistory()
         }
         .task { await model.refreshHistory() }
+        // A call that just ended belongs in "Latest call"; alerts and verdicts change it too.
+        .task(id: "\(model.family?.activeCall?.sessionId ?? "-")\(model.alerts.first?.decision?.verdict ?? "-")") {
+            await model.refreshHistory()
+        }
         .task {
             while !Task.isCancelled {
                 await model.refreshFamily()
