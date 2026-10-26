@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Run the fake-puck command on both samples and read the result: does the evidence look like what Dimas should see?
   Commit: `Add backend call pipeline with scam analysis`
 
-- [ ] **2. A live call next to the Mac reaches the backend by itself (stand-in puck)**
+- [x] **2. A live call next to the Mac reaches the backend by itself (stand-in puck)**
   Becomes usable: `tools/mac_puck.py` listens through the Mac microphone placed beside the parent's iPhone on loudspeaker, starts a session by itself when speech begins, uploads ~3 s pieces through the same puck API, and ends the session after the call goes quiet.
   Why now: The physical puck moved to the next hardware phase; the demo still needs a real call's audio to flow into the pipeline, so the stand-in replaces it before the app's warning loop is built on top.
   PRD ref: `prd.md > Call listening`
@@ -99,3 +99,5 @@ Activity mode:
 - TestFlight cut; both iPhones run the app installed from Xcode (learner decision, for speed). The demo is unchanged.
 - Family routes landed with slice 1's backend commit, since the app's linking flow and the backend shipped from the same session.
 - Slice 3 was committed before slice 2 — the app was verified while the stand-in puck was being redefined; nothing in slice 3 depends on slice 2.
+- The stand-in pairs with the family through the parent's invite code (`POST /api/pucks/claim`) — the dev puck token belongs to no family, so its calls would never reach Ratna's phones. The backend for slice 4 (alerts, decisions, history, APNs, Live Activity pushes) landed in slice 2's commit because the claim route lives with it.
+- The stand-in picks the built-in microphone by name — on this Mac input `:0` is a silent Zoom virtual device.

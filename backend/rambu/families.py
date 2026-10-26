@@ -82,6 +82,7 @@ def puck_view(puck: dict | None) -> dict | None:
 
 
 def family_view(db: Database, device: dict) -> dict:
+    from .alerts import active_call  # alerts imports this module
     family_id = device["family_id"]
     members = db.all("SELECT * FROM devices WHERE family_id = ? ORDER BY created_at", (family_id,))
     invite = None
@@ -96,6 +97,7 @@ def family_view(db: Database, device: dict) -> dict:
         "members": [member_view(m) for m in members if device["status"] == "active" or m["id"] == device["id"]],
         "invite": invite,
         "puck": puck_view(puck),
+        "activeCall": active_call(db, family_id) if device["status"] == "active" else None,
     }
 
 

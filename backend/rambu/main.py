@@ -6,12 +6,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import Body, FastAPI, Header, HTTPException, Request
 
-from . import families
+from . import alerts, families
 from .analyze import ScamAnalyzer
+from .push import APNs, FamilyNotifier
 from .auth import bearer, hash_token
 from .config import Settings, load_settings
 from .db import Database
-from .pipeline import Analyzer, CallManager, LogNotifier, Notifier, Transcriber
+from .pipeline import Analyzer, CallManager, Notifier, Transcriber
 from .transcribe import SAMPLE_RATE, WhisperTranscriber, decode_wav
 
 DEV_PUCK_ID = "dev-puck"
@@ -36,7 +37,7 @@ def create_app(
     db = Database(settings.database_path)
     transcriber = transcriber or WhisperTranscriber(settings.whisper_model)
     analyzer = analyzer or ScamAnalyzer(settings.openrouter_api_key, settings.openrouter_model)
-    notifier = notifier or LogNotifier()
+    notifier = notifier or FamilyNotifier(db, APNs(settings))
     calls = CallManager(db, transcriber, analyzer, notifier)
     if settings.dev_puck_token:
         ensure_dev_puck(db, settings.dev_puck_token)
@@ -53,6 +54,7 @@ def create_app(
     app.state.calls = calls
     app.state.settings = settings
     families.register(app, db)
+    alerts.register(app, db, notifier)
 
     def puck_from(authorization: str | None) -> dict:
         token = bearer(authorization)
