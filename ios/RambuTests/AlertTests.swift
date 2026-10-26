@@ -17,7 +17,7 @@ final class AlertTests: XCTestCase {
     func testStrongestEvidencePrefersSecretCode() throws {
         let alert = try alert()
         XCTAssertEqual(alert.strongestEvidence?.quote, "Read it to me now, before the money leaves.")
-        XCTAssertEqual(alert.latestSignal, .urgency)
+        XCTAssertEqual(alert.latestSignal, .secretCode)
         XCTAssertEqual(alert.caregiverTitle(.en), "Ratna may be getting scammed")
     }
 
@@ -34,7 +34,7 @@ final class AlertTests: XCTestCase {
         let now = ISO8601DateFormatter().date(from: "2026-10-26T12:00:10Z")!
         let warning = SpeechService.announcement(for: live, lang: .en, now: now)
         XCTAssertEqual(warning?.key, "warning-a1-high_risk")
-        XCTAssertEqual(warning?.text, "Danger. The caller is pressuring you.")
+        XCTAssertEqual(warning?.text, "Danger. The caller is asking for a secret code.")
 
         let old = try alert(callEnded: true)
         XCTAssertNil(SpeechService.announcement(for: old, lang: .en, now: now.addingTimeInterval(3600)))

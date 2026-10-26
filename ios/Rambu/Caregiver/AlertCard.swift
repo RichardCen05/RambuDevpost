@@ -25,7 +25,7 @@ extension FamilyAlert {
     }
 
     /// The most recent signal heard on the call.
-    var latestSignal: Signal? { evidence.last?.signals.last ?? signals.last }
+    var latestSignal: Signal? { Signal.strongest(signals) }
 
     /// Plain sentence for the parent, e.g. "The caller is asking for a secret code".
     func parentHeadline(_ lang: Lang) -> String {

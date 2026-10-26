@@ -49,7 +49,7 @@ Build mode: fast
   Learner check: Run the fake call yourself, tap Scam on the caregiver simulator, and watch the parent simulator turn red.
   Commit: `Add live warnings, caregiver decision, and Live Activity`
 
-- [ ] **5. History, profile, practice, and every failure state**
+- [x] **5. History, profile, practice, and every failure state**
   Becomes usable: Both sides can browse History and call details, change language/name/read-aloud in Profile, do the practice runs, and see clear states for speaker off, no speech, analysis failed, puck offline, no internet, and call ended.
   Why now: Fills out the supporting features after the end-to-end loop works.
   PRD ref: `prd.md > History`, `prd.md > Practice call (onboarding)`, `prd.md > Issue banners`, `prd.md > States and Boundaries`, `prd.md > Language`
@@ -103,3 +103,4 @@ Activity mode:
 - The stand-in picks the built-in microphone by name — on this Mac input `:0` is a silent Zoom virtual device.
 - iOS for slices 4 and 5 was built by two parallel agents on separate branches and merged (learner asked for parallel work to go faster).
 - APNs rejected pushes with TopicDisallowed until a device build registered the `id.rambu.app` App ID with push; after that Apple accepts alert and Live Activity start pushes. Live Activity *updates* were skipped on the simulator because no activity push token reached the backend; to check on real iPhones in slice 6. In-app polling shows warnings and verdicts either way.
+- Headlines and history titles use the strongest signal (secret code > transfer > app > institution > pressure) instead of the last one heard — the demo's OTP request was showing as "pressuring you".

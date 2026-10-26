@@ -41,7 +41,7 @@ extension CallRecord {
     func title(_ lang: Lang) -> String {
         if isListening { return lang.t("Call in progress", "Panggilan sedang berlangsung") }
         if couldNotAssess { return lang.t("Call not checked", "Panggilan tidak diperiksa") }
-        if let first = signals.first { return first.title(lang) }
+        if let first = Signal.strongest(signals) { return first.title(lang) }
         return lang.t("Phone call", "Panggilan telepon")
     }
 

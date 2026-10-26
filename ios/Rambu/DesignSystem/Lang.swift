@@ -66,6 +66,11 @@ enum Signal: String, Codable, CaseIterable, Sendable {
         }
     }
 
+    /// The signal that matters most to the parent: a request for a code beats pressure or a claimed identity.
+    static func strongest(_ signals: [Signal]) -> Signal? {
+        [.secretCode, .transfer, .remoteApp, .impersonation, .urgency].first(where: signals.contains)
+    }
+
     var symbol: String {
         switch self {
         case .impersonation: "building.columns.fill"
