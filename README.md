@@ -1,104 +1,169 @@
-# Rambu
+<p align="center">
+  <img src="docs/images/slide-hero.jpg" alt="Rambu: stop scams while the call is still ongoing" width="100%">
+</p>
 
-Rambu warns older parents about scam phone calls while the call is still going.
+<p align="center">
+  <b>Rambu warns older parents about scam calls while the call is still going, and lets their family step in before money or a code changes hands.</b>
+</p>
 
-A small puck sits on the back of the parent's iPhone and listens to calls on loudspeaker. The backend turns the audio into text, an AI model looks for five scam signals, and the parent and their caregivers (usually a grown child in another city) get a warning with the caller's exact words. The first caregiver to tap **Scam** or **Safe** decides, and that answer reaches the parent's phone before they hand over a code or send money.
+<p align="center">
+  <img alt="iOS 26 SwiftUI" src="https://img.shields.io/badge/iOS%2026-SwiftUI-006F63?logo=swift&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/backend-FastAPI-0F2A29?logo=fastapi&logoColor=white">
+  <img alt="Whisper on device" src="https://img.shields.io/badge/speech-Whisper%20(local)-3B5250">
+  <img alt="ESP32" src="https://img.shields.io/badge/puck-ESP32-D2372C?logo=espressif&logoColor=white">
+  <img alt="English and Bahasa Indonesia" src="https://img.shields.io/badge/lang-EN%20%7C%20ID-F4B400">
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-lightgrey">
+</p>
 
-Rambu is built for families in Indonesia, where older parents are frequent targets of callers posing as a bank, the police, or a child in trouble. The app works in English and Bahasa Indonesia.
+---
+
+## See it work
+
+<table>
+<tr>
+<td width="42%" align="center"><img src="docs/images/demo-parent.gif" alt="Parent's phone during a scam call: Worth a look, then Danger, then a full-screen HANG UP NOW alarm" width="260"></td>
+<td>
+
+A fake bank officer calls Ratna. Her phone is on loudspeaker and Rambu is listening.
+
+1. **"I'm calling from your bank"** turns the card amber: *Worth a look*. Her son Dimas gets the caller's exact words on his phone.
+2. **"Read me the six digit code"** turns it red: *Danger*.
+3. Dimas taps **Scam**. Ratna's phone switches to a flashing red **HANG UP NOW** screen with an alarm, vibration and a spoken warning. It keeps going until she taps *I hung up*.
+
+The first warning arrives about 14 seconds into the call.
+
+</td>
+</tr>
+</table>
+
+## Why
+
+<img src="docs/images/slide-problem.jpg" alt="Gap in current solutions" width="100%">
+
+Caller ID and spam lists only judge the number. A scammer on a fresh number who claims to be the bank sounds convincing to a parent alone at home, and the family usually hears about it after the transfer. Rambu listens to *what is said* during the call and brings in the people the parent already trusts.
 
 ## How it works
 
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as Parent's iPhone (speaker)
+    participant K as Puck / Mac stand-in
+    participant B as Backend
+    participant AI as Whisper + AI model
+    participant C as Caregiver's iPhone
+    P->>K: call audio
+    loop every 3 s
+        K->>B: WAV chunk
+        B->>AI: Whisper transcribes, model reads the masked text
+        AI-->>B: level, signals, exact quotes
+    end
+    B-->>P: push warning + Live Activity
+    B-->>C: push alert with the caller's words
+    C->>B: Scam / Safe (first answer wins)
+    B-->>P: verdict, then HANG UP NOW every 6 s until acknowledged
 ```
-parent's iPhone (loudspeaker)
-        │ sound
-        ▼
-puck / stand-in ──3 s WAV pieces──▶ backend (Mac) ──▶ Whisper (on the Mac)
-                                        │            └─▶ OpenAI model via OpenRouter
-                                        │                 level + signals + exact quotes
-                                        ▼
-                         Apple Push ──▶ parent: warning, Live Activity, verdict
-                                    └─▶ caregivers: alert → Scam / Safe
-```
 
-- **Levels:** `low` (safe), `needs_review` (worth a look), `high_risk` (danger).
-- **Signals:** `impersonation`, `urgency`, `secret_code`, `transfer`, `remote_app`.
-- **Evidence:** every warning carries sentences copied word for word from the transcript. The backend checks each quote against the transcript and drops anything the model made up. A small keyword check catches plain requests for a code ("read it to me", "sebutkan kodenya") if the model misses them.
-- **Privacy:** digits of codes, PINs and account numbers are masked before anything is stored or sent to the model. Raw audio is processed in memory and never written to disk. Caregivers only see the flagged sentences; the parent's full (masked) transcript stays with the parent.
-- **Failures are visible:** a call that couldn't be analyzed is shown as "Could not assess", never as safe.
-
-## Repository
-
-| Path | What's there |
+| | |
 |---|---|
-| `backend/` | Python 3.12 + FastAPI: call pipeline, scam analysis, families, alerts, Apple push |
-| `ios/` | SwiftUI app (iOS 26) with a Live Activity widget, generated with XcodeGen |
-| `firmware/rambu-puck/` | ESP32 firmware for the puck |
-| `tools/mac_puck.py` | Stand-in puck: the Mac's microphone in place of the puck |
-| `samples/test-calls/` | Synthetic test calls (macOS text-to-speech) |
-| `devpost/` | Planning documents: scope, PRD, technical spec, build checklist |
+| **Risk levels** | `low` · `needs_review` (worth a look) · `high_risk` (danger) |
+| **Scam signals** | impersonation · urgency · secret code · transfer · remote-access app |
+| **Evidence** | Every warning quotes the caller word for word. The backend drops any quote the model can't match in the transcript, and a keyword check catches plain requests for a code if the model misses them. |
+| **Privacy** | Codes, PINs and account numbers are masked before anything is stored or sent to the model. Audio stays in memory. Caregivers see only the flagged sentences. |
+| **Failure** | A call that couldn't be analysed shows *Could not assess*, never *Safe*. |
+
+## Screens
+
+<table>
+<tr>
+<td align="center" width="20%"><img src="docs/images/screen-welcome.png" alt="Welcome screen" width="160"><br><sub>Pick a role, English or Bahasa Indonesia</sub></td>
+<td align="center" width="20%"><img src="docs/images/screen-parent-danger.png" alt="Parent home showing Danger" width="160"><br><sub>Parent: live warning</sub></td>
+<td align="center" width="20%"><img src="docs/images/screen-caregiver-alert.png" alt="Caregiver alert detail" width="160"><br><sub>Caregiver: what the caller said, Scam or Safe</sub></td>
+<td align="center" width="20%"><img src="docs/images/screen-hangup.png" alt="HANG UP NOW takeover" width="160"><br><sub>Parent: after the family says Scam</sub></td>
+<td align="center" width="20%"><img src="docs/images/screen-history.png" alt="Call history" width="160"><br><sub>History with the family's verdict</sub></td>
+</tr>
+</table>
+
+## Who it's for
+
+<img src="docs/images/slide-solution.jpg" alt="Solution and users" width="100%">
+
+Older parents in Indonesia who get calls from people posing as a bank, the police or a relative in trouble, and grown children who live in another city and can't be there when the phone rings.
+
+<img src="docs/images/slide-features.jpg" alt="App features" width="100%">
+
+> **In this build:** phone calls on loudspeaker, live warnings with quotes, caregiver Scam/Safe, the hang-up alarm, history, English and Bahasa Indonesia.
+> **Planned, not built yet:** WhatsApp voice calls (slide 3) and the AI call summary (slide 4).
 
 ## Run it
 
-You need a Mac with Xcode 27, [uv](https://docs.astral.sh/uv/), ffmpeg, XcodeGen and cloudflared (`brew install uv ffmpeg xcodegen cloudflared`), an [OpenRouter](https://openrouter.ai) API key, and an Apple Developer account for push notifications.
+You need a Mac with Xcode 27, `brew install uv ffmpeg xcodegen cloudflared`, an [OpenRouter](https://openrouter.ai) API key, and an Apple Developer account for push notifications.
 
-### 1. Backend
+**1. Backend**
 
 ```bash
 cd backend
-cp .env.example .env    # fill in OPENROUTER_API_KEY and the APNS_* values
+cp .env.example .env    # add OPENROUTER_API_KEY and the APNS_* values
 uv run uvicorn rambu.main:create_app --factory --port 8001 --env-file .env
 ```
 
-The first start downloads the Whisper model (about 500 MB). Calls, families and alerts are kept in `backend/data/rambu.sqlite3`.
+The first start downloads the Whisper `small` model (about 500 MB). Data lives in `backend/data/rambu.sqlite3`.
 
-### 2. Public address
-
-```bash
-cloudflared tunnel --url http://localhost:8001
-```
-
-It prints an address like `https://something.trycloudflare.com`. In the app, enter it under **Server** on the welcome screen or in **Profile → Server address**, on both phones. A quick tunnel gets a new address every time it restarts.
-
-### 3. iPhone app
+**2. iPhone app**
 
 ```bash
 cd ios && xcodegen generate && open Rambu.xcodeproj
 ```
 
-Pick your team under Signing & Capabilities, then run on each iPhone. One phone sets up as the parent, the other joins as a caregiver with the six-digit code the parent's phone shows, and the parent taps **Allow**.
+Pick your team under Signing & Capabilities and run on two devices or two simulators. One sets up as the parent, the other joins as a caregiver with the six-digit code from the parent's phone.
 
-### 4. Listening to calls
+Real phones need a public address for the backend: run `cloudflared tunnel --url http://localhost:8001` and enter the printed URL under **Profile → Server address**. Simulators can use `http://127.0.0.1:8001` directly.
 
-For this version, the Mac stands in for the puck. Put the Mac next to the parent's iPhone, then pair it with the invite code shown on the parent's phone (Profile → Invite a caregiver):
+**3. Listen to a call**
 
-```bash
-uv run --project backend python tools/mac_puck.py --server https://something.trycloudflare.com --code 123456
-```
-
-Later runs reuse the pairing: `uv run --project backend python tools/mac_puck.py`. It starts recording on its own when someone speaks and ends the call after six seconds of quiet (or when you press Enter).
-
-### Recording a demo on simulators
-
-Without two iPhones, run the parent and caregiver apps in two iOS Simulators on the same Mac (the simulators reach the backend at `http://127.0.0.1:8001`, no tunnel needed) and record both screens:
+The Mac's microphone stands in for the puck in this version. Pair it with the invite code from the parent's phone (Profile → Invite a caregiver):
 
 ```bash
-tools/record_demo.sh ~/Movies/rambu-take1
+uv run --project backend python tools/mac_puck.py --server http://127.0.0.1:8001 --code 123456
 ```
 
-Turn off **Read alerts aloud** on the simulators (or mute them) while the stand-in puck is listening, so the Mac's speakers don't feed the app's voice back into the microphone.
+It starts when someone speaks and ends the call after six seconds of quiet. Mute the simulators' *Read alerts aloud* so the Mac doesn't hear its own warnings.
 
-### Tests
+No microphone? Play a recorded test call through the same pipeline (set `DEV_PUCK_TOKEN` in `backend/.env` first):
 
 ```bash
-cd backend && uv run pytest
-cd ios && xcodebuild -project Rambu.xcodeproj -scheme Rambu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
+cd backend && DEV_PUCK_TOKEN=… uv run python scripts/fake_puck.py ../samples/test-calls/bank-otp-en.wav
 ```
 
-To push a recorded call through the pipeline without a microphone, set `DEV_PUCK_TOKEN` in `backend/.env`, restart the backend, then from `backend/`: `DEV_PUCK_TOKEN=… uv run python scripts/fake_puck.py ../samples/test-calls/bank-otp-en.wav`.
+**Tests**
+
+```bash
+cd backend && uv run pytest                      # 23 tests
+cd ios && xcodebuild -project Rambu.xcodeproj -scheme Rambu \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test   # 12 tests
+```
+
+`tools/record_demo.sh ~/Movies/take1` records both simulators side by side for a demo video.
+
+## Repository
+
+| Path | What's there |
+|---|---|
+| [`backend/`](backend/) | Python 3.12 + FastAPI: call pipeline, scam analysis, families, alerts, Apple push |
+| [`ios/`](ios/) | SwiftUI app with a Live Activity widget (XcodeGen project) |
+| [`firmware/rambu-puck/`](firmware/rambu-puck/) | ESP32 firmware for the puck |
+| [`tools/`](tools/) | Mac stand-in puck and the demo recording script |
+| [`samples/test-calls/`](samples/test-calls/) | Synthetic scam and safe calls (macOS text-to-speech) |
+| [`devpost/`](devpost/) | Scope, PRD, technical spec, build checklist and an [app map](devpost/app-map.html) |
 
 ## The puck
 
-The puck is a prototype: an ESP32 and a microphone in a 3D-printed case, stuck to the back of the phone below the camera and powered over USB-C. The firmware is in this repo and compiles; recording calls on the puck itself and pairing it from the app are the next hardware phase, so the demo uses the Mac stand-in, which talks to the backend through the same API.
+<img src="docs/images/slide-puck.jpg" alt="Rambu pop socket concept" width="100%">
+
+The puck is an ESP32 with an I²S microphone in a 3D-printed case on the back of the phone. It uses the iPhone's notification service (ANCS) to know when a call is answered, records at 16 kHz and uploads 3-second pieces over Wi-Fi. The firmware is in this repo and compiles. Recording on the puck itself and pairing it from the app are the next hardware phase, so the demo uses the Mac stand-in, which talks to the backend through the same API. The battery and buzzer version on the slide is the concept for later.
+
+<details>
+<summary><b>Parts, wiring and firmware</b></summary>
 
 ### Parts
 
@@ -111,11 +176,7 @@ The puck is a prototype: an ESP32 and a microphone in a 3D-printed case, stuck t
 | Thick foam double-sided tape (2–3 mm) | some | mic ring and board gap |
 | 3D-printed case: body + lid | 1 set | PETG (or PLA+), white |
 
-### Case
-
-Ø66 × 30 mm. The board sits on two support blocks between side guides, with a stop at the antenna end so plugging in USB-C doesn't push it; spare wire wraps around two posts. The lid snaps on at three points, has a 7-hole grill over the mic, and a notch for opening it.
-
-Print settings: 0.2 mm layers, 3 walls, 20% infill, no supports, 100% scale. The body prints standing on its base, the lid top-down.
+Case: Ø66 × 30 mm, lid snaps on at three points with a 7-hole grill over the mic. Print at 0.2 mm layers, 3 walls, 20% infill, no supports.
 
 ### Wiring
 
@@ -128,8 +189,6 @@ Print settings: 0.2 mm layers, 3 walls, 20% infill, no supports, 100% scale. The
 | SCK | D33 | GPIO33 |
 | WS | D25 | GPIO25 |
 
-Match the small white labels on the board rather than counting pins. The mic's sound hole faces the lid grill; a foam ring with a 6 mm hole keeps it clear.
-
 ### Firmware
 
 ```bash
@@ -139,12 +198,10 @@ arduino-cli compile --fqbn esp32:esp32:esp32:PartitionScheme=huge_app firmware/r
 arduino-cli upload  --fqbn esp32:esp32:esp32:PartitionScheme=huge_app -p /dev/cu.usbserial-XXXX firmware/rambu-puck
 ```
 
-What it does:
-
-- Advertises as "Rambu Puck" over Bluetooth and asks the iPhone for the Apple Notification Center Service (ANCS). Once the phone is bonded, iOS reports calls to the puck even when the Rambu app is closed. An answered call ("active call") starts recording; when it disappears, recording stops.
-- Records the INMP441 at 16 kHz and sends 3-second WAV pieces at 8 kHz over Wi-Fi (HTTPS) to `/api/puck/sessions/...`. A loudspeaker call only carries about 300–3400 Hz, and 8 kHz keeps two audio buffers within the ESP32's RAM next to Wi-Fi, TLS and Bluetooth.
-- Blue LED on while recording, slow blink while Wi-Fi is down. A heartbeat every minute keeps the app's puck status current.
-- Settings (Wi-Fi, server address, puck token) are written by the app over Bluetooth, or typed on the serial console at 115200 baud for bench testing:
+- Advertises as "Rambu Puck" over Bluetooth and subscribes to ANCS. An answered call starts recording; when it ends, recording stops.
+- Records at 16 kHz and sends 3-second WAV pieces at 8 kHz over HTTPS to `/api/puck/sessions/...`. A loudspeaker call carries about 300–3400 Hz, and 8 kHz keeps two buffers within the ESP32's RAM next to Wi-Fi, TLS and Bluetooth.
+- Blue LED on while recording, slow blink while Wi-Fi is down, heartbeat every minute.
+- Settings come from the app over Bluetooth, or from the serial console at 115200 baud:
 
 ```
 config {"ssid":"…","pass":"…","url":"https://….trycloudflare.com","token":"…"}
@@ -155,10 +212,12 @@ stop
 
 Bluetooth service `6b1f0001-5a3e-4c8e-9d2a-7a0c52b1e001`: `…0002` info (read), `…0003` settings JSON (encrypted write), `…0004` status (notify), `…0005` start/stop (encrypted write).
 
-### Next hardware phase
+**Next hardware phase:** smaller PopSocket-sized builds, such as an ESP32-S3 SuperMini on a cable (about Ø36 × 12 mm), a XIAO ESP32S3 with a 200 mAh LiPo (about Ø40 × 15 mm), or a custom PCB (about Ø40 × 9 mm).
 
-Smaller, PopSocket-sized builds: an ESP32-S3 SuperMini on a cable (about Ø36 × 12 mm), a XIAO ESP32S3 with a 200 mAh LiPo (about Ø40 × 15 mm), an M5Stack Atom Echo (about Ø38 × 20 mm), or a custom PCB (about Ø40 × 9 mm).
+</details>
 
 ## Built with
 
-Planned and built with the [Devpost Learn "Build With AI: Basics"](https://learn-ai-basics.devpost.com/) skill pack and Claude Code. The planning documents are in [`devpost/`](devpost/).
+Planned and built for [Devpost Learn "Build With AI: Basics"](https://learn-ai-basics.devpost.com/) with its skill pack and Claude Code. The planning documents are in [`devpost/`](devpost/).
+
+Made by Richard and Zahra. Released under the [MIT License](LICENSE).
