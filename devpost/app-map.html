@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rambu App Map</title>
+<style>
+  :root { --teal:#006F63; --ink:#0F2A29; --ink2:#3B5250; --canvas:#F2F6F5; --line:#DCE7E4; --red:#D2372C; --amber:#F4B400; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--canvas); color:var(--ink); font:16px/1.55 -apple-system, "SF Pro Text", system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 34px; margin: 0 0 4px; }
+  h2 { font-size: 22px; margin: 36px 0 10px; }
+  p, li { color: var(--ink2); }
+  .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px 20px; margin:12px 0; }
+  code { font: 14px/1.4 ui-monospace, "SF Mono", Menlo, monospace; background:#E2F2EF; color:var(--ink); padding:1px 5px; border-radius:6px; }
+  .stop { display:grid; grid-template-columns: 34px 1fr; gap: 12px; }
+  .num { width:34px; height:34px; border-radius:50%; background:var(--teal); color:#fff; display:grid; place-items:center; font-weight:700; }
+  svg { width:100%; height:auto; }
+  details summary { cursor:pointer; font-weight:600; color:var(--ink); }
+  .muted { font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Rambu app map</h1>
+  <p>Rambu warns older parents about scam calls while the call is still going. A puck (for now, the Mac's microphone) hears the loudspeaker call, the backend transcribes it and asks an AI model for scam signals with exact quotes, the family gets a warning, and a caregiver's <strong>Scam</strong> tap turns the parent's phone into a full-screen "hang up" alarm.</p>
+
+  <h2>One action, end to end: the caregiver taps Scam</h2>
+  <div class="card">
+    <svg viewBox="0 0 820 230" role="img" aria-labelledby="flowTitle">
+      <title id="flowTitle">Caregiver taps Scam, the backend records the first answer and pushes to the parent, the parent's app shows the hang-up alarm</title>
+      <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B5250"/></marker></defs>
+      <rect x="10" y="20" width="230" height="86" rx="14" fill="#fff" stroke="#DCE7E4"/>
+      <text x="125" y="52" text-anchor="middle" font-size="15" font-weight="700" fill="#0F2A29">Caregiver app</text>
+      <text x="125" y="76" text-anchor="middle" font-size="13" fill="#3B5250">AlertDetailView → Scam</text>
+      <rect x="295" y="20" width="230" height="86" rx="14" fill="#fff" stroke="#DCE7E4"/>
+      <text x="410" y="52" text-anchor="middle" font-size="15" font-weight="700" fill="#0F2A29">Backend</text>
+      <text x="410" y="76" text-anchor="middle" font-size="13" fill="#3B5250">first answer wins (SQLite)</text>
+      <rect x="580" y="20" width="230" height="86" rx="14" fill="#fff" stroke="#DCE7E4"/>
+      <text x="695" y="52" text-anchor="middle" font-size="15" font-weight="700" fill="#0F2A29">Apple Push</text>
+      <text x="695" y="76" text-anchor="middle" font-size="13" fill="#3B5250">verdict + "HANG UP NOW" ×5</text>
+      <rect x="295" y="140" width="515" height="76" rx="14" fill="#FDE6E3" stroke="#D2372C"/>
+      <text x="552" y="172" text-anchor="middle" font-size="15" font-weight="700" fill="#9E1F15">Parent app: full-screen red alarm</text>
+      <text x="552" y="196" text-anchor="middle" font-size="13" fill="#9E1F15">looping sound, vibration, voice — until "I hung up"</text>
+      <line x1="240" y1="63" x2="290" y2="63" stroke="#3B5250" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="525" y1="63" x2="575" y2="63" stroke="#3B5250" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="695" y1="106" x2="695" y2="135" stroke="#3B5250" stroke-width="2" marker-end="url(#arrow)"/>
+    </svg>
+  </div>
+
+  <p class="muted">Reference route (read it in your editor; it wasn't toured live).</p>
+  <div class="card stop"><div class="num">1</div><div>
+    <strong><code>ios/Rambu/Caregiver/AlertDetailView.swift</code></strong> — search <code>model.decide(alert, scam: scam)</code>. The Scam button calls <code>AppModel.decide</code> in <code>ios/Rambu/App/AppModel.swift</code>, which posts the verdict to the backend.
+  </div></div>
+  <div class="card stop"><div class="num">2</div><div>
+    <strong><code>backend/rambu/alerts.py</code></strong> — <code>def decide</code>. Inside one SQLite transaction the first caregiver's answer is stored; anyone later gets the existing decision back. Then <code>FamilyNotifier.verdict</code> in <code>backend/rambu/push.py</code> pushes the verdict, and <code>_repeat_scam_alarm</code> repeats "HANG UP NOW" every 6 s (<code>SCAM_ALARM_REPEATS = 5</code>) until the parent acknowledges.
+  </div></div>
+  <div class="card stop"><div class="num">3</div><div>
+    <strong><code>ios/Rambu/App/RambuApp.swift</code></strong> — search <code>needsHangUp</code>. When the newest alert has an unacknowledged scam verdict, the overlay shows <code>ScamTakeoverView</code> (<code>ios/Rambu/Parent/ScamTakeoverView.swift</code>). "I hung up" calls <code>POST /api/alerts/{id}/acknowledge</code>, which stops the repeats.
+  </div></div>
+
+  <details class="card">
+    <summary>Where the warning itself comes from</summary>
+    <p><code>backend/rambu/pipeline.py</code> → <code>CallWorker._analyze</code> runs on every ~3 s of audio. <code>backend/rambu/analyze.py</code> → <code>validate</code> keeps only quotes that appear word for word in the transcript; <code>safety_net</code> catches plain requests for a code if the model misses them. The model instructions are in <code>backend/rambu/prompt.md</code>.</p>
+  </details>
+
+  <h2>To change this, start here</h2>
+  <ul>
+    <li>Push wording (English/Indonesian): <code>backend/rambu/i18n.py</code>.</li>
+    <li>In-app wording: the <code>lang.t("English", "Indonesian")</code> pairs next to each view.</li>
+    <li>How hard the alarm nags: <code>SCAM_ALARM_REPEATS</code> and <code>SCAM_ALARM_INTERVAL</code> in <code>backend/rambu/push.py</code>; sound, vibration and voice in <code>ScamAlarm</code>.</li>
+    <li>What counts as a scam signal: <code>backend/rambu/prompt.md</code>, plus <code>_CODE_REQUESTS</code> in <code>analyze.py</code>.</li>
+    <li>Colors and type: <code>ios/Shared/Brand.swift</code>.</li>
+  </ul>
+
+  <h2>A practice to reuse</h2>
+  <div class="card">
+    <p>When a step fails quietly, read the outside service's own reason before changing code. Here, warnings reached the screens through polling but Apple refused the pushes. The backend log showed <code>400 TopicDisallowed</code>, which pointed at the App ID rather than at the push code. One signed device build registered <code>id.rambu.app</code> with push, and the next run logged <code>200 OK</code> (recorded under Revisions in <code>devpost/checklist.md</code>). The same habit found the silent microphone: ffmpeg's device list showed input <code>:0</code> was a Zoom virtual device.</p>
+  </div>
+
+  <h2>Run it again</h2>
+  <div class="card">
+    <p>Backend: <code>cd backend && uv run uvicorn rambu.main:create_app --factory --port 8001 --env-file .env</code><br>
+    App: <code>cd ios && xcodegen generate && open Rambu.xcodeproj</code>, run on two simulators.<br>
+    Listening: <code>uv run --project backend python tools/mac_puck.py</code>. Full steps are in <code>README.md</code>.</p>
+    <p class="muted">Snapshot of commit <code>ad77c7e</code> (26 Oct 2026); the code can drift after this.</p>
+  </div>
+</main>
+</body>
+</html>

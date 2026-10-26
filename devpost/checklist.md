@@ -81,15 +81,15 @@ Build mode: fast
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence:
-Route and stops:
-Edit outcome:
-Reflection:
-Activity mode:
+Activity and evidence: brief evidence-based recap (learner asked for speed): the APNs `400 TopicDisallowed` → App ID registration → `200 OK` investigation, and the silent Zoom microphone found via ffmpeg's device list (see Revisions).
+Route and stops: reference route only — `AlertDetailView` → `alerts.py decide` / `push.py verdict, _repeat_scam_alarm` → `RambuApp needsHangUp` / `ScamTakeoverView`.
+Edit outcome: not applicable (the scam-alarm change came from the learner's final-review feedback).
+Reflection: offered in chat; optional.
+Activity mode: recap.
 
 ## Revisions
 
