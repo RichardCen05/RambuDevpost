@@ -83,6 +83,10 @@ def test_scam_call_alerts_family_and_first_answer_wins(tmp_path):
         assert len(final) == 1  # both see the same decision
         assert len([e for e in notifier.events if e[0] == "verdict"]) == 1
 
+        assert c.post(f"/api/alerts/{alert['id']}/acknowledge", headers=auth(dimas["deviceToken"])).status_code == 403
+        acked = c.post(f"/api/alerts/{alert['id']}/acknowledge", headers=auth(parent["deviceToken"])).json()
+        assert acked["acknowledged"] is True
+
         history = c.get("/api/history", headers=auth(parent["deviceToken"])).json()
         assert history[0]["level"] == "high_risk" and history[0]["decision"] is not None
         detail_parent = c.get(f"/api/history/{history[0]['id']}", headers=auth(parent["deviceToken"])).json()

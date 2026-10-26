@@ -25,6 +25,8 @@ log = logging.getLogger("rambu.push")
 
 HOSTS = {"sandbox": "https://api.sandbox.push.apple.com", "production": "https://api.push.apple.com"}
 URGENT_SOUND = "rambu-urgent.caf"
+SCAM_ALARM_REPEATS = 5
+SCAM_ALARM_INTERVAL = 6.0  # seconds between repeated "hang up now" alarms
 
 
 class APNs:
@@ -165,12 +167,28 @@ class FamilyNotifier:
                         alert_payload(title, body, rambu, urgent=alert["verdict"] == "scam"))
             state = {"level": alert["verdict"], "title": short, "headline": title, "decidedBy": decider["name"]}
             self._send_activity_update(parent, state, alert=(title, body))
+            if alert["verdict"] == "scam":  # own thread: the pool may be busy waiting for activity tokens
+                threading.Thread(target=self._repeat_scam_alarm, args=(alert["id"], parent, decider["name"]),
+                                 name="scam-alarm", daemon=True).start()
         for caregiver in caregivers:
             if caregiver["id"] == decider["id"]:
                 continue
             title, body = i18n.decided_by_other(caregiver["language"], alert["verdict"], decider["name"])
             self._later(self.apns.send, caregiver["apns_token"], caregiver["apns_env"],
                         alert_payload(title, body, {**rambu, "kind": "locked"}, urgent=False), priority=5)
+
+    def _repeat_scam_alarm(self, alert_id: str, parent: dict, decider_name: str) -> None:
+        """Keep alarming the parent until they confirm they hung up: a single banner is easy to miss mid-panic."""
+        lang = parent["language"]
+        for attempt in range(1, SCAM_ALARM_REPEATS + 1):
+            time.sleep(SCAM_ALARM_INTERVAL)
+            row = self.db.one("SELECT acknowledged_at FROM alerts WHERE id = ?", (alert_id,))
+            if not row or row["acknowledged_at"]:
+                return
+            title, body = i18n.scam_alarm(lang, decider_name)
+            self.apns.send(parent["apns_token"], parent["apns_env"],
+                           alert_payload(title, body, {"kind": "alarm", "alertId": alert_id, "level": "high_risk",
+                                                       "verdict": "scam", "attempt": attempt}, urgent=True))
 
     # Helpers ---------------------------------------------------------------
 

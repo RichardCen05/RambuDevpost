@@ -107,6 +107,8 @@ Source: `scope.md > The POC Boundary`.
 - The caregiver taps **Scam** or **Safe** (Safe asks for confirmation). The first answer wins: other caregivers see it locked with who decided, and their buttons are disabled.
 - The verdict is pushed to the parent at once. **Scam**: red alert "{Caregiver} says this is a scam. Hang up and call the number on the back of your card.", Live Activity turns red. **Safe**: calm green "{Caregiver} checked: this looks safe."
 - When the call ends before a decision, the alert shows "Call ended" and can still be marked.
+- **Scam takeover (added at final review):** after a Scam verdict the parent's phone is made hard to ignore: the verdict push is repeated as "HANG UP NOW" every ~6 s (up to 5 times), and the app shows a flashing full-screen red alarm with a looping sound that plays even in silent mode, continuous vibration, and a spoken "hang up", until the parent taps **I hung up**.
+  - [ ] Tapping Scam on the caregiver's phone makes the parent's screen go full red with the alarm; repeated pushes stop once the parent taps I hung up.
   - [ ] Tapping **Scam** on the caregiver's phone turns the parent's screen red within a few seconds, mid-call.
   - [ ] A second caregiver opening the same alert sees "Marked as scam by {name}" with locked buttons.
 

@@ -82,6 +82,12 @@ def verdict_for_parent(lang: str, verdict: str, by: str) -> tuple[str, str, str]
     )
 
 
+def scam_alarm(lang: str, by: str) -> tuple[str, str]:
+    return (t(lang, "⚠️ HANG UP NOW", "⚠️ TUTUP TELEPON SEKARANG"),
+            t(lang, f"{by} confirmed this call is a scam. Don't share any code or send money.",
+              f"{by} memastikan telepon ini penipuan. Jangan berikan kode apa pun atau kirim uang."))
+
+
 def decided_by_other(lang: str, verdict: str, by: str) -> tuple[str, str]:
     word = t(lang, "a scam", "penipuan") if verdict == "scam" else t(lang, "safe", "aman")
     return (t(lang, f"{by} already answered", f"{by} sudah menjawab"),

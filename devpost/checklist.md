@@ -71,12 +71,13 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 4: the full warning → Scam → red loop on simulators (agent-verified on two simulators; learner hasn't tried it yet)
-- [ ] Final kick-the-tires exploration and feedback completed — the slice 6 rehearsal on two simulators
+- [x] Early usable behavior explored — after slice 4: the full warning → Scam → red loop on simulators (agent-verified on two simulators; learner hasn't tried it yet)
+- [x] Final kick-the-tires exploration and feedback completed — the slice 6 rehearsal on two simulators
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Scam verdict must be an "annoying" danger alarm on the parent's phone (learner feedback) — repeated HANG UP NOW pushes every ~6 s until acknowledged, flashing full-screen red takeover with looping alarm, vibration, and voice; verified on two simulators (5 repeats, stops on I hung up).
+- [x] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
 

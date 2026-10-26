@@ -33,6 +33,7 @@ def alert_view(db: Database, alert: dict) -> dict:
         "callEnded": bool(alert["call_ended"]),
         "decision": decision_view(db, alert),
         "recipients": [{"id": c["id"], "name": c["name"]} for c in caregivers],
+        "acknowledged": bool(alert.get("acknowledged_at")),
     }
 
 
@@ -106,6 +107,14 @@ def register(app: FastAPI, db: Database, notifier) -> None:
         if accepted:
             notifier.verdict(alert, device)
         return {"alert": alert_view(db, alert), "accepted": accepted}
+
+    @app.post("/api/alerts/{alert_id}/acknowledge")
+    def acknowledge(alert_id: str, authorization: str | None = Header(default=None)):
+        """The parent confirms they hung up; this stops the repeated scam alarm."""
+        device = device_from(db, authorization, role="parent")
+        family_alert(alert_id, device)
+        db.execute("UPDATE alerts SET acknowledged_at = COALESCE(acknowledged_at, ?) WHERE id = ?", (utc_now(), alert_id))
+        return alert_view(db, db.one("SELECT * FROM alerts WHERE id = ?", (alert_id,)))
 
     @app.get("/api/history")
     def history(authorization: str | None = Header(default=None)):

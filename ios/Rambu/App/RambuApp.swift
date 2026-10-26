@@ -20,6 +20,16 @@ struct RambuApp: App {
                         .environment(\.locale, model.lang.locale)
                         .tint(Brand.teal)
                 }
+                .overlay {
+                    // Parent: a caregiver's scam verdict takes over the whole screen until "I hung up".
+                    if model.role == .parent, let alert = model.alerts.first, alert.needsHangUp {
+                        ScamTakeoverView(alert: alert)
+                            .environment(model)
+                            .environment(\.lang, model.lang)
+                            .transition(.opacity)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: model.alerts.first?.needsHangUp)
                 .onAppear { PushService.shared.attach(model) }
                 .task(id: pushReady) {
                     guard pushReady else { return }

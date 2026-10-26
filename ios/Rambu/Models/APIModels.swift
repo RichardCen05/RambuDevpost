@@ -67,6 +67,14 @@ struct FamilyAlert: Codable, Identifiable, Equatable, Sendable {
     let callEnded: Bool
     let decision: Decision?
     let recipients: [Recipient]
+    /// The parent confirmed they hung up after a scam verdict.
+    var acknowledged: Bool? = nil
+
+    /// A scam verdict the parent hasn't confirmed yet, recent enough to still matter.
+    var needsHangUp: Bool {
+        guard let decision, decision.isScam, acknowledged != true else { return false }
+        return Date.now.timeIntervalSince(decision.at) < 10 * 60
+    }
 }
 
 struct DecisionResult: Codable, Sendable {

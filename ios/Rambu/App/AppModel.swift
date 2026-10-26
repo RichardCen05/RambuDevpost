@@ -138,6 +138,16 @@ final class AppModel {
         }
     }
 
+    /// Parent: "I hung up" — stops the repeated alarm on the backend and closes the takeover.
+    func acknowledge(_ alert: FamilyAlert) async {
+        do {
+            let updated: FamilyAlert = try await api.post("/api/alerts/\(alert.id)/acknowledge")
+            if let index = alerts.firstIndex(where: { $0.id == alert.id }) { alerts[index] = updated }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     // MARK: Push
 
     func registerPush(apnsToken: String? = nil, liveActivityStartToken: String? = nil, liveActivityUpdateToken: String? = nil) async {

@@ -103,6 +103,9 @@ class Database:
         self._conn.execute("PRAGMA foreign_keys = ON")
         self._conn.execute("PRAGMA journal_mode = WAL")
         self._conn.executescript(SCHEMA)
+        columns = {row[1] for row in self._conn.execute("PRAGMA table_info(alerts)")}
+        if "acknowledged_at" not in columns:  # added after the first databases were created
+            self._conn.execute("ALTER TABLE alerts ADD COLUMN acknowledged_at TEXT")
         self.lock = threading.RLock()
 
     def execute(self, sql: str, params: tuple | dict = ()) -> sqlite3.Cursor:
