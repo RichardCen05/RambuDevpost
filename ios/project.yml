@@ -1,0 +1,85 @@
+name: Rambu
+options:
+  bundleIdPrefix: id.rambu
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: 9SDHH46ZX7
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+targets:
+  Rambu:
+    type: application
+    platform: iOS
+    sources:
+      - Rambu
+      - Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: id.rambu.app
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    info:
+      path: Rambu/Info.plist
+      properties:
+        CFBundleDisplayName: Rambu
+        CFBundleLocalizations: [en, id]
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIBackgroundModes: [remote-notification]
+        NSBluetoothAlwaysUsageDescription: Rambu connects to your puck over Bluetooth to set it up.
+        NSSupportsLiveActivities: true
+        NSSupportsLiveActivitiesFrequentUpdates: true
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        ITSAppUsesNonExemptEncryption: false
+    entitlements:
+      path: Rambu/Rambu.entitlements
+      properties:
+        aps-environment: development
+        com.apple.developer.usernotifications.time-sensitive: true
+    dependencies:
+      - target: RambuWidgets
+  RambuWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - RambuWidgets
+      - Shared
+      - path: Rambu/Resources/Assets.xcassets
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: id.rambu.app.widgets
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+    info:
+      path: RambuWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Rambu
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+  RambuTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - RambuTests
+    dependencies:
+      - target: Rambu
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Rambu:
+    build:
+      targets:
+        Rambu: all
+    test:
+      targets:
+        - RambuTests

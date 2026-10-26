@@ -56,7 +56,8 @@ PRD ref: `prd.md > The Core Journey`.
 - **Backend:** Richard's Mac. `uv run --project backend uvicorn rambu.main:app --host 127.0.0.1 --port 8001 --env-file backend/.env`. Needs `backend/.env` (from `.env.example`): `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `APNS_TEAM_ID`, `APNS_KEY_ID`, `APNS_KEY_PATH`, `APNS_BUNDLE_ID`, `APNS_ENV` (`sandbox` for Xcode builds, `production` for TestFlight), `WHISPER_MODEL`, `DATABASE_PATH`.
 - **Public address:** a Cloudflare **quick tunnel** on this Mac: `cloudflared tunnel --url http://localhost:8001` prints a `https://<random>.trycloudflare.com` address. It changes every time the tunnel restarts, so the app keeps it as a setting: **Server address** in Profile, also reachable from a small **Server** link on Welcome (needed before the family is created). Saving a new address on the parent's phone re-sends it to the puck over Bluetooth. Both iPhones must use the same address.
 - **Puck:** wire per README, then `arduino-cli compile/upload` the `firmware/rambu-puck` sketch once. Powered from USB-C.
-- **iPhones:** TestFlight build from Richard's team on Richard's iPhone (caregiver, "Dimas") and Zahra's iPhone (parent, "Ratna"). Zahra joins Richard's App Store Connect team as an internal tester. During development, run from Xcode on the simulator and on device.
+- **iPhones:** installed from Xcode (Richard's team, sandbox APNs) on Richard's iPhone (caregiver, "Dimas") and Zahra's iPhone (parent, "Ratna"). During development, the simulator.
+- **Stand-in puck:** `uv run --project backend python tools/mac_puck.py --server <address>` on a Mac placed beside the parent's iPhone on loudspeaker. It uses the puck API with the dev puck token.
 - **Demo recording:** the 60-second scene from `scope.md > What "Working" Looks Like`, both iPhones in English. Mac on, tunnel up, puck on Wi-Fi.
 - **Deployment:** the Mac + tunnel is the deployment; it must stay on during the demo and judging.
 
@@ -78,6 +79,10 @@ Implements `prd.md > Puck pairing and Wi-Fi`, `prd.md > Call listening`.
 - **Recorder:** INMP441 over I2S, 16 kHz, 16-bit mono (SD=GPIO32, SCK=GPIO33, WS=GPIO25; L/R to GND). Double buffer of ~3 s each; one fills while the other uploads.
 - **Uploader:** HTTPS POST of each piece as WAV with `Authorization: Bearer <puckToken>`; retries once; drops a piece rather than stalling.
 - **LED:** on-board blue LED (GPIO2) on while recording; slow blink while not on Wi-Fi.
+
+### Stand-in puck (Mac)
+Implements `prd.md > Call listening` for this submission while the hardware is in its next phase.
+Records the Mac microphone at 16 kHz with ffmpeg (avfoundation), starts a session when speech energy stays above a threshold for ~1 s, uploads 3 s WAV pieces to the same endpoints as the puck, and ends the session after ~6 s of quiet or on Enter.
 
 ### Backend API
 Implements `prd.md > Family linking`, `prd.md > History`, `prd.md > Caregiver decision`.
@@ -210,7 +215,7 @@ RambuDevpost/
 │   ├── wiring.png, previews/*.png
 │   └── puck.py                   # Blender source for the case
 ├── samples/                      # sample call audio (scam + safe)
-├── tools/cloudflared.yml.example # tunnel config template
+├── tools/mac_puck.py             # stand-in puck: Mac mic → puck API
 └── devpost/                      # planning docs
 ```
 

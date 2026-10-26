@@ -73,6 +73,7 @@ Bottom tab bar, floating pill style.
   - [ ] An expired or wrong code shows an inline error and the caregiver stays on Enter code.
 
 ### Puck pairing and Wi-Fi
+*Deferred to the next hardware phase; the Puck tab shows the puck's status only.*
 - **Find puck** scans over Bluetooth for the Rambu puck and pairs it. The app then sends it the Wi-Fi network and password plus what it needs to reach Rambu and the family.
 - The Puck tab shows whether it is connected and online.
   - [ ] After pairing and Wi-Fi setup, the Puck tab shows the puck as connected and online.
@@ -145,9 +146,11 @@ Source: `scope.md > The POC Boundary`.
 - **Puck is USB-C powered in this phase** — the Puck tab shows connection, not battery. A battery comes in a later hardware phase.
 
 ## What We're Building
-Everything in **Features and Behavior** above, on both roles, in English and Indonesian; plus the puck firmware that records on answer and stops on hang-up; a deployed backend; a TestFlight build installed on both iPhones; and a README covering the puck's 3D design, components, wiring, firmware, and pairing.
+Everything in **Features and Behavior** above except puck pairing, on both roles, in English and Indonesian; the puck firmware (written, compiles); a Mac stand-in that records the call through the same interface for the demo; the backend behind a public tunnel; the app installed on both iPhones from Xcode; and a README covering the puck's 3D design, components, wiring, firmware, and pairing.
 
 ## Deferred From the POC
+- **Puck recording on its own hardware and pairing from the app** — the integration isn't finished; a Mac stand-in uses the same interface for the demo.
+- **TestFlight** — installing from Xcode is faster for two demo phones.
 - **Smaller puck hardware** (PopSocket-sized options) — needs new parts and soldering; see `scope.md > Later`.
 - **Puck battery** — phase 1 runs on USB-C power; a battery-powered puck is the next hardware phase, after this submission.
 

@@ -9,7 +9,7 @@ Build mode: fast
 
 ## Slices
 
-- [ ] **1. A recorded scam call gets flagged with the caller's exact words**
+- [x] **1. A recorded scam call gets flagged with the caller's exact words**
   Becomes usable: Running the backend and feeding it an English test call (the demo's bank-OTP script) prints `high_risk` with "Read it to me now" quoted as evidence; a friendly call stays `low`.
   Why now: This is the kernel's brain and the two riskiest services (local Whisper, the OpenRouter model). Everything else just carries its result around.
   PRD ref: `prd.md > Scam analysis`, `prd.md > Call listening`
@@ -19,17 +19,17 @@ Build mode: fast
   Learner check: Run the fake-puck command on both samples and read the result: does the evidence look like what Dimas should see?
   Commit: `Add backend call pipeline with scam analysis`
 
-- [ ] **2. The real puck records a real phone call by itself**
-  Becomes usable: With the puck bonded to the parent's iPhone, answering a call on speaker turns the blue LED on, the backend receives audio and builds a transcript, and hanging up ends the session.
-  Why now: ANCS call detection and ESP32 memory are the biggest unknowns in the spec; if either fails, the plan changes, so it has to be known before the app is built around it.
+- [ ] **2. A live call next to the Mac reaches the backend by itself (stand-in puck)**
+  Becomes usable: `tools/mac_puck.py` listens through the Mac microphone placed beside the parent's iPhone on loudspeaker, starts a session by itself when speech begins, uploads ~3 s pieces through the same puck API, and ends the session after the call goes quiet.
+  Why now: The physical puck moved to the next hardware phase; the demo still needs a real call's audio to flow into the pipeline, so the stand-in replaces it before the app's warning loop is built on top.
   PRD ref: `prd.md > Call listening`
-  Spec ref: `spec.md > Puck firmware`, `spec.md > Where It Runs and How Someone Tries It`, `spec.md > Decisions and Open Issues`
-  Build: `firmware/rambu-puck/` (BLE peripheral + bonding, ANCS client, I2S double buffer, HTTPS uploader, LED, `Preferences`), temporary USB-serial `config` command for Wi-Fi/server/token until slice 5, quick-tunnel note, install `arduino-cli` + `cloudflared`.
-  Verify (mechanical): `arduino-cli compile` succeeds; serial log on a real call shows `ActiveCall added → recording → chunk 200 … → ActiveCall removed → session end`; backend shows the session with a transcript.
-  Learner check: Call the parent iPhone, answer on speaker, watch the LED, say the OTP line, hang up, then read the transcript the backend printed.
-  Commit: `Add puck firmware with call detection and audio upload`
+  Spec ref: `spec.md > Backend API`, `spec.md > Call pipeline (backend)`, `spec.md > Decisions and Open Issues`
+  Build: `tools/mac_puck.py` (mic capture via ffmpeg/avfoundation, energy-based start/stop, upload loop, Enter to end), README note; the ESP32 firmware stays in `firmware/` (compiles, hardware run deferred).
+  Verify (mechanical): playing `samples/test-calls/bank-otp-en.wav` out of the Mac speaker near the mic makes `mac_puck.py` start a session on its own and the backend end it `high_risk` with the OTP sentence as evidence; `arduino-cli compile` of the firmware still succeeds.
+  Learner check: Call the parent iPhone, answer on speaker next to the Mac, say the OTP line, hang up, and read the transcript the stand-in printed.
+  Commit: `Add Mac stand-in puck and puck firmware`
 
-- [ ] **3. Parent and caregiver can set up and link in the app**
+- [x] **3. Parent and caregiver can set up and link in the app**
   Becomes usable: On two simulators, one person finishes parent onboarding and gets a code; the other joins as caregiver; the parent taps Allow; both Homes show each other, in English or Indonesian.
   Why now: The warning loop needs two linked devices with tokens; this also sets up the design system everything else reuses.
   PRD ref: `prd.md > The Core Journey` (steps 1–3), `prd.md > Screens and Layout`, `prd.md > Look and Feel`, `prd.md > Family linking`, `prd.md > Language`
@@ -49,17 +49,7 @@ Build mode: fast
   Learner check: Run the fake call yourself, tap Scam on the caregiver simulator, and watch the parent simulator turn red.
   Commit: `Add live warnings, caregiver decision, and Live Activity`
 
-- [ ] **5. The parent pairs the puck from the app**
-  Becomes usable: In onboarding or the Puck tab, Find puck pairs the real puck, sends it Wi-Fi and the server address, and the tab shows it online; changing the Server address re-sends it.
-  Why now: Replaces slice 2's serial setup with the real experience once the puck protocol is proven.
-  PRD ref: `prd.md > Puck pairing and Wi-Fi`
-  Spec ref: `spec.md > Puck firmware`, `spec.md > iOS app — Parent`
-  Build: PuckManager (scan, bond, config write, status notify, command fallback), Attach puck + Puck Wi-Fi steps, Puck tab, backend puck registration/hello, server-address re-send.
-  Verify (mechanical): device build installs on the parent iPhone; pairing completes; backend logs `/api/puck/hello`; Puck tab shows online; a real call still records.
-  Learner check: Forget the puck in Bluetooth settings, pair it again from the app, then make a test call.
-  Commit: `Add puck pairing and Wi-Fi setup from the app`
-
-- [ ] **6. History, profile, practice, and every failure state**
+- [ ] **5. History, profile, practice, and every failure state**
   Becomes usable: Both sides can browse History and call details, change language/name/read-aloud in Profile, do the practice runs, and see clear states for speaker off, no speech, analysis failed, puck offline, no internet, and call ended.
   Why now: Fills out the supporting features after the end-to-end loop works.
   PRD ref: `prd.md > History`, `prd.md > Practice call (onboarding)`, `prd.md > Issue banners`, `prd.md > States and Boundaries`, `prd.md > Language`
@@ -69,20 +59,20 @@ Build mode: fast
   Learner check: Switch the language in Profile, open History, and try the practice call on a fresh install.
   Commit: `Add history, profile, practice, and protection states`
 
-- [ ] **7. Both iPhones run the TestFlight build and the demo scene works for real**
-  Becomes usable: The TestFlight build on Richard's and Zahra's iPhones runs the full 60-second demo with the real puck; the README documents setup, the puck's 3D design, parts, wiring, firmware, and pairing.
+- [ ] **6. Both iPhones run the app and the demo scene works for real**
+  Becomes usable: The app, installed from Xcode on Richard's and Zahra's iPhones, runs the full 60-second demo with the Mac stand-in puck; the README documents setup, the puck's 3D design, parts, wiring, firmware, and pairing.
   Why now: Last, because it packages everything; the rehearsal is the finish line from `scope.md > What "Working" Looks Like`.
   PRD ref: `prd.md > What We're Building`, `prd.md > The Core Journey`
   Spec ref: `spec.md > Where It Runs and How Someone Tries It`, `spec.md > External Services and Dependencies`
-  Build: production APNs setting, app icon/version, archive + upload, internal testers, README + `hardware/` files, final pass on copy.
-  Verify (mechanical): archive and upload succeed; build appears in TestFlight; rehearsal measures the OTP-to-warning time and both screens behave as in the demo script.
-  Learner check: Do one full take of the demo script with Zahra and the puck.
-  Commit: `Prepare TestFlight build and README`
+  Build: install on both iPhones from Xcode (sandbox APNs), README + `hardware/` design files, final pass on copy.
+  Verify (mechanical): both iPhones run the device build and receive pushes; rehearsal measures the OTP-to-warning time and both screens behave as in the demo script.
+  Learner check: Do one full take of the demo script with Zahra.
+  Commit: `Prepare device builds and README`
 
 ## Hands-on Checkpoints
 
 - [ ] Early usable behavior explored — after slice 4: the full warning → Scam → red loop on simulators
-- [ ] Final kick-the-tires exploration and feedback completed — the slice 7 rehearsal on real devices
+- [ ] Final kick-the-tires exploration and feedback completed — the slice 6 rehearsal on real devices
 
 ## Final Review
 
@@ -101,3 +91,11 @@ Reflection:
 Activity mode:
 
 ## Revisions
+
+- Upload rate is 8 kHz instead of 16 kHz — two 3 s audio buffers at 16 kHz don't fit next to Wi-Fi, TLS, and Bluetooth in the ESP32's RAM; a phone loudspeaker carries only ~300–3400 Hz anyway.
+- Firmware logic lives in `puck_main.cpp` — Arduino's prototype generator (ctags) has no Apple Silicon build, and the replacement mangles `.ino` prototypes.
+- App copy uses an in-code English/Indonesian table instead of a String Catalog — the language has to switch instantly from Profile without restarting the app.
+- Physical puck recording and in-app puck pairing moved to the next hardware phase (learner decision); a Mac stand-in puck using the same API keeps the demo a real call — the learner wants the build faster and the puck integration isn't finished.
+- TestFlight cut; both iPhones run the app installed from Xcode (learner decision, for speed). The demo is unchanged.
+- Family routes landed with slice 1's backend commit, since the app's linking flow and the backend shipped from the same session.
+- Slice 3 was committed before slice 2 — the app was verified while the stand-in puck was being redefined; nothing in slice 3 depends on slice 2.
