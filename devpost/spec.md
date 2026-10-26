@@ -59,7 +59,8 @@ PRD ref: `prd.md > The Core Journey`.
 - **iPhones:** installed from Xcode (Richard's team, sandbox APNs) on Richard's iPhone (caregiver, "Dimas") and Zahra's iPhone (parent, "Ratna"). During development, the simulator.
 - **Stand-in puck:** `uv run --project backend python tools/mac_puck.py --server <address>` on a Mac placed beside the parent's iPhone on loudspeaker. It uses the puck API with the dev puck token.
 - **Demo recording:** the 60-second scene from `scope.md > What "Working" Looks Like`, both iPhones in English. Mac on, tunnel up, puck on Wi-Fi.
-- **Deployment:** the Mac + tunnel is the deployment; it must stay on during the demo and judging.
+- **Deployment:** none. The Mac + tunnel only runs while testing or recording. TestFlight was considered at ship time and skipped: a public link needs Beta App Review, and testers couldn't use the app without the Mac backend and a puck.
+- **Sharing:** public repository https://github.com/RichardCen05/RambuDevpost (MIT). Demo video: recorded on two simulators, link to be added once uploaded.
 
 ## Look and Feel
 From `prd.md > Look and Feel`, as SwiftUI tokens in `Brand.swift`:
