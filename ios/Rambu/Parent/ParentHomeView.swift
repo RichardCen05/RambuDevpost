@@ -6,9 +6,20 @@ struct ParentHomeView: View {
     @State private var showInvite = false
 
     var body: some View {
+        NavigationStack {
+            home
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationDestination(for: CallRoute.self) { CallDetailView(id: $0.id) }
+        }
+    }
+
+    private var home: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HomeHeader(name: model.settings.name)
+
+                // ParentCallSection() goes here (Parent/ParentCallView.swift, other branch)
+                ParentIssueBanners()
 
                 let family = model.family
                 if let pending = family?.pending, !pending.isEmpty {
@@ -65,14 +76,21 @@ struct ParentHomeView: View {
                     .font(.headline)
                     .foregroundStyle(Brand.ink)
                     .padding(.top, 8)
-                Card {
-                    HStack(spacing: 14) {
-                        Image("mascot-calm").resizable().scaledToFit().frame(width: 56, height: 64)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(lang.t("No calls yet", "Belum ada panggilan")).font(.headline).foregroundStyle(Brand.ink)
-                            Text(lang.t("Answer calls on speaker; Rambu listens through the puck.",
-                                        "Angkat telepon dengan loudspeaker; Rambu mendengar lewat puck."))
-                                .font(.subheadline).foregroundStyle(Brand.ink2)
+                if let latest = model.history.first {
+                    NavigationLink(value: CallRoute(id: latest.id)) {
+                        CallCard(record: latest)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Card {
+                        HStack(spacing: 14) {
+                            Image("mascot-calm").resizable().scaledToFit().frame(width: 56, height: 64)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(lang.t("No calls yet", "Belum ada panggilan")).font(.headline).foregroundStyle(Brand.ink)
+                                Text(lang.t("Answer calls on speaker; Rambu listens through the puck.",
+                                            "Angkat telepon dengan loudspeaker; Rambu mendengar lewat puck."))
+                                    .font(.subheadline).foregroundStyle(Brand.ink2)
+                            }
                         }
                     }
                 }
@@ -81,7 +99,11 @@ struct ParentHomeView: View {
             .padding(.bottom, 100)
         }
         .background(Brand.canvas.ignoresSafeArea())
-        .refreshable { await model.refreshFamily() }
+        .refreshable {
+            await model.refreshFamily()
+            await model.refreshHistory()
+        }
+        .task { await model.refreshHistory() }
         .task {
             while !Task.isCancelled {
                 await model.refreshFamily()

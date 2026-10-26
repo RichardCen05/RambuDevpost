@@ -14,9 +14,9 @@ struct MainTabs: View {
                 case .home:
                     if role == .parent { ParentHomeView() } else { CaregiverHomeView() }
                 case .history:
-                    PlaceholderScreen(title: lang.t("History", "Riwayat"))
+                    HistoryView()
                 case .puck:
-                    PlaceholderScreen(title: "Puck")
+                    PuckTabView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -93,7 +93,7 @@ struct HomeHeader: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Spacer()
-                Avatar(name: name, color: Brand.teal, size: 36)
+                ProfileButton()
             }
             Text(lang.t("Hi, \(name)", "Halo, \(name)"))
                 .font(Brand.title())
