@@ -5,7 +5,7 @@ struct CaregiverOnboarding: View {
     @State private var step: Step = .code
     @State private var code = ""
 
-    enum Step { case code, profile, waiting }
+    enum Step { case code, profile, waiting, practice }
 
     var body: some View {
         Group {
@@ -15,7 +15,9 @@ struct CaregiverOnboarding: View {
             case .profile:
                 CaregiverProfileStep(code: code, onJoined: { step = .waiting }, onBack: { step = .code })
             case .waiting:
-                WaitingForAllowStep(onAllowed: { model.finishOnboarding() })
+                WaitingForAllowStep(onAllowed: { step = .practice })
+            case .practice:
+                CaregiverPracticeStep(onDone: { model.finishOnboarding() })
             }
         }
         .animation(.easeInOut(duration: 0.2), value: step)
@@ -31,7 +33,7 @@ struct EnterCodeStep: View {
 
     var body: some View {
         StepScaffold(
-            step: 1, total: 3,
+            step: 1, total: 4,
             title: lang.t("Enter code", "Masukkan kode"),
             subtitle: lang.t("The 6-digit code from your parent's Rambu app.", "Kode 6 angka dari aplikasi Rambu orang tua Anda."),
             onBack: onBack
@@ -93,7 +95,7 @@ struct CaregiverProfileStep: View {
     @State private var error: String?
 
     var body: some View {
-        StepScaffold(step: 2, total: 3, title: lang.t("Who are you?", "Siapa Anda?"), onBack: onBack) {
+        StepScaffold(step: 2, total: 4, title: lang.t("Who are you?", "Siapa Anda?"), onBack: onBack) {
             VStack(alignment: .leading, spacing: 10) {
                 Text(lang.t("Your name", "Nama Anda")).font(.subheadline.weight(.semibold)).foregroundStyle(Brand.ink2)
                 TextField(lang.t("Your name", "Nama Anda"), text: $name)
@@ -157,7 +159,7 @@ struct WaitingForAllowStep: View {
 
     var body: some View {
         StepScaffold(
-            step: 3, total: 3,
+            step: 3, total: 4,
             title: lang.t("Waiting for approval", "Menunggu persetujuan"),
             subtitle: lang.t("Ask your parent to tap Allow on their phone.", "Minta orang tua Anda menekan Izinkan di HP-nya."),
             onBack: nil

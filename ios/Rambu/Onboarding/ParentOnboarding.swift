@@ -6,7 +6,7 @@ struct ParentOnboarding: View {
     @Environment(\.lang) private var lang
     @State private var step: Step = .tutorial
 
-    enum Step: Int, CaseIterable { case tutorial, name, puck, ready, invite }
+    enum Step: Int, CaseIterable { case tutorial, name, puck, ready, invite, practice }
 
     var body: some View {
         Group {
@@ -15,7 +15,8 @@ struct ParentOnboarding: View {
             case .name: ParentNameStep(onNext: { step = .puck }, onBack: { step = .tutorial })
             case .puck: AttachPuckStep(onNext: { step = .ready }, onBack: { step = .name })
             case .ready: BeforeYouBeginStep(onNext: { step = .invite }, onBack: { step = .puck })
-            case .invite: InviteStep(onNext: { model.finishOnboarding() }, onBack: nil)
+            case .invite: InviteStep(onNext: { step = .practice }, onBack: nil)
+            case .practice: ParentPracticeView(onDone: { model.finishOnboarding() })
             }
         }
         .transition(.opacity)
@@ -126,7 +127,7 @@ struct ParentNameStep: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        StepScaffold(step: 1, total: 4, title: lang.t("What is your name?", "Siapa nama Anda?"), onBack: onBack) {
+        StepScaffold(step: 1, total: 5, title: lang.t("What is your name?", "Siapa nama Anda?"), onBack: onBack) {
             TextField(lang.t("Your name", "Nama Anda"), text: $name)
                 .font(.title3)
                 .textContentType(.name)
@@ -160,7 +161,7 @@ struct AttachPuckStep: View {
 
     var body: some View {
         StepScaffold(
-            step: 2, total: 4,
+            step: 2, total: 5,
             title: lang.t("Attach the puck", "Pasang puck"),
             subtitle: lang.t("Stick it to the back of the phone and plug in its cable.", "Tempel di punggung HP lalu colok kabelnya."),
             onBack: onBack
@@ -192,7 +193,7 @@ struct BeforeYouBeginStep: View {
     @State private var error: String?
 
     var body: some View {
-        StepScaffold(step: 3, total: 4, title: lang.t("Before you begin", "Sebelum mulai"), onBack: onBack) {
+        StepScaffold(step: 3, total: 5, title: lang.t("Before you begin", "Sebelum mulai"), onBack: onBack) {
             VStack(spacing: 10) {
                 IconRow(symbol: "speaker.wave.3.fill",
                         title: lang.t("Use speakerphone during calls", "Pakai loudspeaker saat menelepon"),
@@ -241,7 +242,7 @@ struct InviteStep: View {
 
     var body: some View {
         StepScaffold(
-            step: 4, total: 4,
+            step: 4, total: 5,
             title: lang.t("Invite a caregiver", "Undang pengawas"),
             subtitle: lang.t("Give this code to your child. They enter it in their Rambu app.", "Berikan kode ini ke anak Anda. Mereka memasukkannya di aplikasi Rambu."),
             onBack: onBack
