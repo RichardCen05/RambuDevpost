@@ -72,6 +72,24 @@ sequenceDiagram
 | **Privacy** | Codes, PINs and account numbers are masked before anything is stored or sent to the model. Audio stays in memory. Caregivers see only the flagged sentences. |
 | **Failure** | A call that couldn't be analysed shows *Could not assess*, never *Safe*. |
 
+## Why a puck?
+
+iOS doesn't let third-party apps hear a phone call, so no app can listen to the call by itself. Rambu listens the way someone sitting next to the parent would: a small puck on the back of the phone, shaped like a pop socket, hears the call through the loudspeaker.
+
+- **Turns on by itself.** The phone tells the puck over Bluetooth when a call is answered (Apple's notification service, ANCS), so it records only during calls and stops when the call ends.
+- **Streams, never stores.** 3-second pieces go over Wi-Fi to the backend, which turns them into text, masks codes and PINs, and asks the AI model for scam signals.
+- **Still a pop socket.** A grip in the hand and a stand on the table.
+
+<table>
+<tr>
+<td align="center" width="33%"><img src="docs/images/puck-closed.jpg" alt="Puck case, closed, with the mic grill and USB-C cable" width="260"><br><sub>Case with the mic grill (Ø66 × 30 mm)</sub></td>
+<td align="center" width="33%"><img src="docs/images/puck-inside.jpg" alt="Puck case, open, with the ESP32 board and microphone" width="260"><br><sub>Inside: ESP32 board and I²S mic</sub></td>
+<td align="center" width="33%"><img src="docs/images/puck-on-phone.jpg" alt="Puck on the back of a phone, real scale" width="260"><br><sub>On the back of the phone, real scale</sub></td>
+</tr>
+</table>
+
+> **Status: concept and prototype.** The case is designed for 3D printing and the firmware in [`firmware/rambu-puck/`](firmware/rambu-puck/) compiles. In this build a Mac's microphone stands in for the puck ([`tools/mac_puck.py`](tools/mac_puck.py)) and talks to the backend through the same API, so the whole flow runs today without the hardware. Parts and wiring are [further down](#the-puck).
+
 ## Screens
 
 <table>
@@ -95,29 +113,36 @@ Older parents in Indonesia who get calls from people posing as a bank, the polic
 > **In this build:** phone calls on loudspeaker, live warnings with quotes, caregiver Scam/Safe, the hang-up alarm, history, English and Bahasa Indonesia.
 > **Planned, not built yet:** WhatsApp voice calls (slide 3) and the AI call summary (slide 4).
 
-## Run it
+## Try it yourself
 
-You need a Mac with Xcode 27, `brew install uv ffmpeg xcodegen cloudflared`, an [OpenRouter](https://openrouter.ai) API key, and an Apple Developer account for push notifications.
+There's no TestFlight build yet: there wasn't time for Apple's beta review before the deadline. The way to try Rambu is to clone it and run it on one Mac. You don't need the puck or two iPhones; two iOS simulators and the Mac's microphone are enough.
+
+You need a Mac with Xcode 27, `brew install uv ffmpeg xcodegen`, and an [OpenRouter](https://openrouter.ai) API key.
+
+```bash
+git clone https://github.com/RichardCen05/RambuDevpost.git
+cd RambuDevpost
+```
 
 **1. Backend**
 
 ```bash
 cd backend
-cp .env.example .env    # add OPENROUTER_API_KEY and the APNS_* values
+cp .env.example .env    # add OPENROUTER_API_KEY; the APNS_* values are optional on simulators
 uv run uvicorn rambu.main:create_app --factory --port 8001 --env-file .env
 ```
 
-The first start downloads the Whisper `small` model (about 500 MB). Data lives in `backend/data/rambu.sqlite3`.
+The first start downloads the Whisper `small` model (about 500 MB). Data lives in `backend/data/rambu.sqlite3`. Without the `APNS_*` values the apps still update by polling; add them (Apple Developer account) for push notifications and Live Activities.
 
-**2. iPhone app**
+**2. iPhone app on two simulators**
 
 ```bash
 cd ios && xcodegen generate && open Rambu.xcodeproj
 ```
 
-Pick your team under Signing & Capabilities and run on two devices or two simulators. One sets up as the parent, the other joins as a caregiver with the six-digit code from the parent's phone.
+Pick your team under Signing & Capabilities and run on two simulators. One sets up as the parent, the other joins as a caregiver with the six-digit code from the parent's phone. Simulators reach the backend at `http://127.0.0.1:8001`.
 
-Real phones need a public address for the backend: run `cloudflared tunnel --url http://localhost:8001` and enter the printed URL under **Profile → Server address**. Simulators can use `http://127.0.0.1:8001` directly.
+For real iPhones, expose the backend with `cloudflared tunnel --url http://localhost:8001` and enter the printed URL under **Profile → Server address** on both phones.
 
 **3. Listen to a call**
 
