@@ -14,3 +14,6 @@ DerivedData/
 .build/
 __pycache__/
 .venv/
+
+# Backend runtime data
+backend/data/
