@@ -1,0 +1,16 @@
+# Personal learning context stays out of commits
+/devpost/learner-profile.md
+
+# Local credentials
+.env
+.env.*
+!.env.example
+*.p8
+
+# OS / build
+.DS_Store
+xcuserdata/
+DerivedData/
+.build/
+__pycache__/
+.venv/
